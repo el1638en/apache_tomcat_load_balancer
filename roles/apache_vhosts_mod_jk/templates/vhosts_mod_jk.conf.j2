@@ -1,0 +1,68 @@
+# Mutex Mecanism. Look at support on https://httpd.apache.org/docs/2.4/fr/mod/core.html#mutex
+Mutex file:{{ apache_vhosts_dir }}/{{ item.key }}/mutex
+{% if item.value.https_enabled %}
+<IfModule ssl_module>
+  SSLRandomSeed startup file:/dev/urandom 1024
+  SSLRandomSeed connect file:/dev/urandom 1024
+  SSLSessionCache shmcb:{{ apache_logs_dir }}/{{ item.key }}/ssl_scache(512000)
+  SSLSessionCacheTimeout 1200
+</IfModule>
+{% endif %} 
+
+
+<VirtualHost *:{{ http_default_port }}>
+  ServerName {{ item.value.serverName }}
+  {% if item.value.https_enabled %}
+  Redirect permanent / https://{{ item.value.serverName }}  
+  {% else %}
+  
+  # ServerAdmin: Your address, where problems with the server should be e-mailed.
+  # This address appears on some server-generated pages, such as error documents.  e.g. admin@your-domain.com
+  ServerAdmin {{ apache_server_admin }}
+  
+  # ServerName gives the name and port that the server uses to identify itself.
+  # This can often be determined automatically, but we recommend you specify
+  # it explicitly to prevent problems during startup.
+  # If your host doesn't have a registered DNS name, enter its IP address here.
+  ServerAlias {{ item.value.serverAlias }}
+  
+  # Include other configuration
+  {% include './templates/additionnal.conf.j2' %}
+
+  {% endif %}
+</VirtualHost>
+
+{% if item.value.https_enabled %}
+<VirtualHost *:{{ https_default_port }}>
+  
+  # ServerAdmin: Your address, where problems with the server should be
+  # e-mailed.  This address appears on some server-generated pages, such
+  # as error documents.  e.g. admin@your-domain.com
+  ServerAdmin {{ apache_server_admin }}
+  
+  # ServerName gives the name and port that the server uses to identify itself.
+  # This can often be determined automatically, but we recommend you specify
+  # it explicitly to prevent problems during startup.
+  # If your host doesn't have a registered DNS name, enter its IP address here.
+ 
+  ServerName {{ item.value.serverName }}
+  ServerAlias {{ item.value.serverAlias }}
+  SSLEngine on
+  SSLCertificateFile		"{{ apache_ssl_dir }}/{{ item.key }}/cert.pem"
+  SSLCertificateKeyFile		"{{ apache_ssl_dir }}/{{ item.key }}/key.pem"
+  
+  # Support only for SSLv3.0 and TLSv1.0
+  # all = "+SSLv3 +TLSv1 +TLSv1.1 +TLSv1.2" à partir de la version 1.0.1 d'OpenSSL 
+  SSLProtocol             all
+
+  # CA certificate files location
+  # SSLCACertificateFile
+   
+  # Include other configuration
+  {% include './templates/additionnal.conf.j2' %}
+
+
+</VirtualHost>
+# Key protection Passphrase at startup
+SSLPassPhraseDialog		exec:{{ apache_ssl_dir }}/{{ item.key }}/passphrase.sh
+{% endif %}

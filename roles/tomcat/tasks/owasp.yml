@@ -12,10 +12,10 @@
 - name: Change logs directory right.
   file:
     path: "{{ tomcat_last_version }}/logs"
-    mode: 0300
     state: directory
     owner: "{{ tomcat_user }}"
     group: "{{ tomcat_group }}"
+    mode: 0300
     recurse: yes
 
 - name: Delete unused files or directories

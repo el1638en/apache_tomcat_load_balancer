@@ -1,0 +1,20 @@
+---
+# defaults file for apache_2_private_ca
+
+apache_2_private_ca_user: root
+apache_2_private_ca_user_group: root
+apache_2_private_ca_bits: 2048
+apache_2_private_ca_md: sha256
+apache_2_private_ca_dir: "/etc/pki/apache2/private_ca"
+apache_2_private_ca_index: "{{ apache_2_private_ca_dir }}/index.txt"
+apache_2_private_ca_serial: "{{ apache_2_private_ca_dir }}/serial"
+apache_2_private_ca_key: "{{ apache_2_private_ca_dir }}/ca_key.pem"
+apache_2_private_ca_cert: "{{ apache_2_private_ca_dir }}/ca_cert.pem"
+apache_2_private_ca_default_days: 3650
+apache_2_private_ca_country: FR
+apache_2_private_ca_state: Rhone
+apache_2_private_ca_locality: Lyon
+apache_2_private_ca_organisation: Syscom
+apache_2_private_ca_organisation_unit: IT
+apache_2_private_ca_name: Authority Company Inc,
+apache_2_private_ca_subj: "/C=\"{{ apache_2_private_ca_country }}\"/ST=\"{{ apache_2_private_ca_state }}\"/L=\"{{ apache_2_private_ca_locality }}\"/O=\"{{ apache_2_private_ca_organisation }}\"/OU=\"{{ apache_2_private_ca_organisation_unit }}\"/CN={{ apache_2_private_ca_name }}"

@@ -1,0 +1,64 @@
+---
+# tasks file to mod_jk
+
+- name: Create virtual mutex directories
+  file:
+    path: "{{ apache2_log_dir }}/{{ item.key }}/mutex"
+    state: directory
+    owner: root
+    group: root
+    mode: 0644
+  with_dict: "{{ apache2_vhosts_mod_jk }}"
+
+- name: Copy Apache2 mod_jk configuration file
+  template:
+    src: workers.properties.j2
+    dest: "/etc/libapache2-mod-jk/workers.properties"
+    owner: root
+    group: root
+    mode: 0644
+  with_dict: "{{ apache2_vhosts_mod_jk }}"
+
+- name: Copy Apache2 mod_jk configuration file
+  template:
+    src: jk.conf.j2
+    dest: "{{ apache2_mods_available_dir }}/jk.conf"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Enable Apache2 mod_jk configuration.
+  file:
+    src: "{{ apache2_mods_available_dir }}/jk.conf"
+    dest: "{{ apache2_mods_enabled_dir }}/jk.conf"
+    state: link
+    owner: root
+    group: root
+    mode: 0777
+
+- name: Enable Apache2 mod_jk for workers.
+  file:
+    src: "{{ apache2_mods_available_dir }}/jk.conf"
+    dest: "/etc/libapache2-mod-jk/httpd-jk.conf"
+    state: link
+    owner: root
+    group: root
+    mode: 0777
+
+- name: Copy virtualhost configuration file
+  template:
+    src: vhost_mod_jk.conf.j2
+    dest: "{{ apache2_mods_available_dir }}/vhost_mod_jk.conf"
+    owner: root
+    group: root
+    mode: 0644
+  with_dict: "{{ apache2_vhosts_mod_jk }}"
+
+- name: Enable virtualhost configuration
+  file:
+    src: "{{ apache2_mods_available_dir }}/vhost_mod_jk.conf"
+    dest: "{{ apache2_mods_enabled_dir }}/vhost_mod_jk.conf"
+    state: link
+    owner: root
+    group: root
+    mode: 0777

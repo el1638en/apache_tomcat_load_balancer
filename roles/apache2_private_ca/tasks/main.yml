@@ -1,0 +1,105 @@
+---
+# tasks file for apache_2_private_ca
+
+- name: Installing openssl package
+  apt:
+    pkg: openssl
+    state: present
+
+- name: Create certification authority (CA) main directory
+  file:
+    path: "{{ apache_2_private_ca_dir }}"
+    state: directory
+    owner: "{{ apache_2_private_ca_user }}"
+    group: "{{ apache_2_private_ca_user_group }}"
+
+- name: Create CA new certificats directory
+  file:
+    path: "{{ apache_2_private_ca_dir }}/newcerts"
+    state: directory
+    owner: "{{ apache_2_private_ca_user }}"
+    group: "{{ apache_2_private_ca_user_group }}"
+
+- name: Copy configuration file into CA directory
+  template:
+    src: openssl_ca.conf.j2
+    dest: "{{ apache_2_private_ca_dir }}/openssl_ca.conf"
+    owner: "{{ apache_2_private_ca_user }}"
+    group: "{{ apache_2_private_ca_user_group }}"
+
+- name: Copy script for certificat validity
+  copy:
+    src: check_cert_validity.sh
+    dest: "{{ apache_2_private_ca_dir }}/check_cert_validity.sh"
+    owner: "{{ apache_2_private_ca_user }}"
+    group: "{{ apache_2_private_ca_user_group }}"
+    mode: 0500
+
+- name: Check if serial file exists
+  stat:
+    path: "{{ apache_2_private_ca_serial }}"
+  register: serial_file
+
+- name: Initialize serial file
+  lineinfile:
+    dest: "{{ apache_2_private_ca_serial }}"
+    create: yes
+    regexp: ''
+    line: '01'
+    owner: "{{ apache_2_private_ca_user }}"
+    group: "{{ apache_2_private_ca_user_group }}"
+  when: not serial_file.stat.exists
+
+- name: Check if index.txt file exists
+  stat:
+    path: "{{ apache_2_private_ca_index }}"
+  register: index_file
+
+- name: Initialize index.txt file
+  file:
+    path: "{{ apache_2_private_ca_index }}"
+    state: touch
+    owner: "{{ apache_2_private_ca_user }}"
+    group: "{{ apache_2_private_ca_user_group }}"
+  when: not index_file.stat.exists
+
+- name: Check if private Key exists
+  stat:
+    path: "{{ apache_2_private_ca_key }}"
+  register: private_key
+
+- name: Create private Key of the CA
+  command: >
+    openssl genrsa
+      -out {{ apache_2_private_ca_key }} {{ apache_2_private_ca_bits }}
+      -rand file:/dev/random
+  when: not private_key.stat.exists
+
+- name: Protect private Key of the CA (only read access for root who is the owner)
+  file:
+    path: "{{ apache_2_private_ca_key }}"
+    mode: 0400
+    owner: "{{ apache_2_private_ca_user }}"
+    group: "{{ apache_2_private_ca_user_group }}"
+
+- name: Check if X509 Certification for the CA exists
+  stat:
+    path: "{{ apache_2_private_ca_cert }}"
+  register: ca_cert_file
+
+- name: Check if X509 is already valid
+  shell: "{{ apache_2_private_ca_dir }}/check_cert_validity.sh {{ apache_2_private_ca_cert }}"
+  register: ca_cert_valid
+  when: ca_cert_file.stat.exists
+
+- name: Create X509 Certification for the CA
+  command: >
+    openssl req -new
+      -x509
+      -key {{ apache_2_private_ca_key }}
+      -out {{ apache_2_private_ca_cert }}
+      -days {{ apache_2_private_ca_default_days }}
+      -config "{{ apache_2_private_ca_dir }}/openssl_ca.conf"
+      -extensions v3_ca
+      -subj "{{ apache_2_private_ca_subj }}"
+  when: (not ca_cert_file.stat.exists) or (ca_cert_valid is defined and ca_cert_valid.rc|int != 0)

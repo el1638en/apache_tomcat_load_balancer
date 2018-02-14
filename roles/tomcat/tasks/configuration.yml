@@ -51,8 +51,8 @@
     mode: "{{ item.mode }}"
     owner: "{{ tomcat_user }}"
     group: "{{ tomcat_group }}"
-    with_items:
-   - "{{ tomcat_config_files }}"
+  with_items:
+    - "{{ tomcat_config_files }}"
 
 - name: Copy Tomcat systemd script
   template:
@@ -61,6 +61,6 @@
     owner: root
     group: root
     mode: 0644
-    notify:
+  notify:
     - Reload systemd
     - Enable Tomcat service

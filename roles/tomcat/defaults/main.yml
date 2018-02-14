@@ -73,5 +73,5 @@ tomcat_remove_files:
  - "webapps/manager/"
  - "conf/tomcat-users.xml"
  - "conf/tomcat-users.xsd"
- - "webapps/docs/"
+ # - "webapps/docs/"
  

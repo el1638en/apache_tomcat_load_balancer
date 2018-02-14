@@ -1,15 +1,15 @@
 ---
 # tasks file for apache2
 
-- include: install.yml
+- include_tasks: install.yml
 
-- include: backup.yml
+- include_tasks: config.yml
 
-- include: config.yml
+- include_tasks: modsecurity.yml
 
-- include: modsecurity.yml
+- include_tasks: mod_jk.yml
 
-- include: status.yml
+- include_tasks: status.yml
 
 - name: Restart apache2
   command: echo "Restart apache2"

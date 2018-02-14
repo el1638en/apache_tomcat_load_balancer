@@ -15,7 +15,6 @@ Environment=CATALINA_BASE={{ tomcat_home }}
 Environment='CATALINA_OPTS=-Xms512M -Xmx1024M -server -XX:+UseParallelGC'
 Environment='JAVA_OPTS=-Djava.awt.headless=true'
 
-Environment=CATALINA_OPTS=
 #Environment="JAVA_OPTS=-Dfile.encoding=UTF-8 -Dnet.sf.ehcache.skipUpdateCheck=true -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled -XX:+UseParNewGC -XX:MaxPermSize=128m -Xms512m -Xmx512m"
 
 ExecStart={{tomcat_home}}/bin/startup.sh

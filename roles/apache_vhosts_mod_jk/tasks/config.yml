@@ -1,0 +1,32 @@
+---
+
+- name: Add Virtual hosts file to HTTPD
+  lineinfile:
+    dest: "{{ apache_httpd_file }}"
+    insertafter: EOF
+    line: 'Include {{ apache_vhosts_conf_dir }}/*_mod_jk.conf'
+    owner: "{{ root_user }}"
+    group: "{{ root_group }}"
+
+- name: Copy workers.properties configuration file for Mod_Jk
+  template:
+    src: workers_mod_jk.properties.j2
+    dest: "{{ apache_conf_dir }}/workers.properties"
+    owner: "{{ root_user }}"
+    group: "{{ root_group }}"
+  with_dict: "{{ apache_vhosts_mod_jk }}"
+
+- name: Copy mod_jk.conf file to Apache configuration directory
+  template:
+    src: mod_jk.conf.j2
+    dest: "{{ apache_conf_dir }}/mod_jk.conf"
+    owner: "{{ root_user }}"
+    group: "{{ root_group }}"
+
+- name: Add mod_jk.conf to HTTPD
+  lineinfile:
+    dest: "{{ apache_httpd_file }}"
+    insertafter: EOF
+    line: 'Include {{ apache_conf_dir }}/mod_jk.conf'
+    owner: "{{ root_user }}"
+    group: "{{ root_group }}"

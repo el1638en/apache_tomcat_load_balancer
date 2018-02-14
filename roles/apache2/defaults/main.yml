@@ -1,12 +1,16 @@
 ---
 # defaults file for apache2
 apache2_http_default_port: 80
+apache2_https_default_port: 443
 apache2_config_dir: "/etc/apache2"
 apache2_config_file: "{{ apache2_config_dir }}/apache2.conf"
 apache2_site_available: "{{ apache2_config_dir }}/sites-available"
 apache2_mods_available_dir: "{{ apache2_config_dir }}/mods-available"
 apache2_mods_enabled_dir: "{{ apache2_config_dir }}/mods-enabled"
-
+java_home: /usr/bin/java
+apache2_log_dir: "/var/log/apache2"
+apache2_ssl_dir: "/etc/pki/apache2"
+apache2_ssl_ca_dir: "{{ apache2_ssl_dir }}/private_ca"
 # Apache2 modsecurity 
 apache2_mod_security_base_dir: "/etc/modsecurity"
 apache2_mod_security_config : 
@@ -25,6 +29,25 @@ apache2_status_enable_authentication: True
 apache2_server_admin: "root@admin"
 apache2_status_auth_login: "EL1638EN"
 apache2_status_auth_passowrd: "Mmdp-3325"
+root_user: root
+root_group: root
+mod_jk_port: '8009'
+apache2_conf_log_level: warn
+ssl_country: FR
+ssl_state: Rhone
+ssl_locality: Lyon
+ssl_organisation: Syscom
+ssl_organisation_unit: IT
+apache2_vhosts_mod_jk:
+  vhost1:
+    serverName: 'vhosts1.fr'
+    serverAlias: 'www.vhosts1.fr'
+    https_enabled: False
+    ssl_subj: "/C=\"{{ ssl_country }}\"/ST=\"{{ ssl_state }}\"/L=\"{{ ssl_locality }}\"/O=\"{{ ssl_organisation }}\"/OU=\"{{ ssl_organisation_unit }}\"/CN=vhosts1.fr"
+    webapps: 'docs'
+    workers:
+        - { name: 'worker1', host: '192.168.57.2', port: '{{ mod_jk_port }}' }
+        - { name: 'worker2', host: '192.168.58.2', port: '{{ mod_jk_port }}' }
 
 apache2_mods_disabled: []
 apache2_mods_enabled:
