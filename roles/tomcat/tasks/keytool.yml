@@ -1,0 +1,36 @@
+---
+
+# tasks file for keytool ssl - tomcat
+- name: Create tomcat keystore directory
+  file:
+    path: "{{ tomcat_keystore_dir }}"
+    owner: "{{ tomcat_user }}"
+    group: "{{ tomcat_group }}"
+    state: directory
+    recurse: yes
+
+- name: Check if keystore file exists
+  stat:
+    path: "{{ tomcat_keystore_file }}"
+  register: tomcat_keystore_file_status
+
+- name: Generate keystore and certifcate
+  command: >
+    keytool
+      -genkey
+      -noprompt
+      -trustcacerts
+      -keyalg RSA
+      -alias {{ tomcat_keystore_alias }}
+      -dname "{{ tomcat_keystore_subj }}"
+      -keypass {{ tomcat_keystore_password }}
+      -keystore {{ tomcat_keystore_file }}
+      -storepass {{ tomcat_keystore_password }}
+      -validity 3650
+  when: not tomcat_keystore_file_status.stat.exists
+
+- name: Change owner of keystore file
+  file:
+    path: "{{ tomcat_keystore_file }}"
+    owner: "{{ tomcat_user }}"
+    group: "{{ tomcat_group }}"

@@ -1,0 +1,48 @@
+---
+# tasks file to install apache-tomcat
+
+- name: Stop eventual tomcat server running
+  service:
+    name: tomcat
+    state: stopped
+    enabled: no
+  ignore_errors: true
+
+- name: Create tomcat versions directory
+  file:
+    path: "{{ tomcat_versions }}"
+    state: directory
+
+- name: Delete the tomcat home link
+  file:
+    dest: "{{ tomcat_home }}"
+    state: absent
+
+- name: Delete the last version directory
+  file:
+    dest: "{{ tomcat_last_version }}"
+    state: absent
+  ignore_errors: true
+
+- name: Install required librairies
+  apt:
+    pkg: "{{ item }}"
+    state: present
+  with_items: "{{ tomcat_required_packages }}"
+
+# TODO
+# ??? : Le téléchargement se fait par défaut dans /tmp
+# Si le fichier est trop gros et /tmp est plus petit, il y aura des soucis.
+# Question : Doit-on créer un gros répertoire spécialement pour les téléchargements ?
+# Comment indiquer à Ansible de poser les fichiers téléchargés dans ce répertoire spécial ?
+- name: Download, decompress and delete tomcat Archive
+  unarchive:
+    src: "{{ tomcat_url }}"
+    dest: "{{ tomcat_versions }}/"
+    remote_src: True
+
+- name: Download, decompress and delete lib tcnative Archive
+  unarchive:
+    src: "{{ tomcat_tcnative_url }}"
+    dest: "{{ tomcat_last_version }}/lib/"
+    remote_src: True

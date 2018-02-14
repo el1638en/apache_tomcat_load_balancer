@@ -1,0 +1,10 @@
+---
+
+###################
+# Playbook to install role apache_from_scratch
+###################
+- hosts: vm-debian-1
+  become: yes
+  roles:
+    - role: apache2
+      tags: ['apache2']

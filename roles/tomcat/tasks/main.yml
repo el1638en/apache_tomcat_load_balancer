@@ -1,0 +1,42 @@
+---
+# tasks file for tomcat
+
+- name: Check if tomcat is installed on the system
+  shell: cat "{{ tomcat_last_version }}/RELEASE-NOTES"
+  register: tomcat_version_result
+  ignore_errors: True
+
+- include: install.yml
+  when: (tomcat_version_result|failed) or (tomcat_version not in tomcat_version_result.stdout)
+
+- include: configuration.yml
+
+# Apply OWASP rule to secure Tomcat
+- include: owasp.yml
+
+# Openssl with Tomcat
+- include: openssl.yml
+  when: tomcat_openssl_enabled
+
+# SSL with keytool
+- include: keytool.yml
+  when: tomcat_keystore_enabled
+
+- include: iptables.yml
+  when: tomcat_iptables_enabled
+
+- name: Restart tomcat
+  command: echo "Restart Tomcat service"
+  notify:
+    - Restart tomcat
+
+- meta: flush_handlers
+  when: tomcat_goss_enabled
+
+- name: Pause for 20 seconds to launch tomcat server
+  pause:
+    seconds: 20
+  when: tomcat_goss_enabled
+
+- include: goss.yml
+  when: tomcat_goss_enabled

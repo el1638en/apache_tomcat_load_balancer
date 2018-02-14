@@ -1,0 +1,21 @@
+---
+
+- name : Create modsecurity.conf file
+  copy:
+    src: "{{ apache2_mod_security_base_dir }}/modsecurity.conf-recommended"
+    dest: "{{ apache2_mod_security_base_dir }}/modsecurity.conf"
+    owner: root
+    group: root
+    mode: 0644
+    remote_src: yes
+
+- name: Change the config modsecurity
+  lineinfile:
+    dest: "{{ apache2_mod_security_base_dir }}/modsecurity.conf"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.value }}"
+    owner: root
+    group: root
+    mode: 0644
+    state: present
+  with_items: "{{ apache2_mod_security_config }}"

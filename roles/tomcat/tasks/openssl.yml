@@ -1,0 +1,68 @@
+---
+# tasks file for opensslssl - tomcat
+
+- name: Installing openssl
+  apt:
+    pkg: openssl
+    state: present
+
+- name: Create tomcat security directory
+  file:
+    path: "{{ tomcat_openssl_dir }}"
+    owner: "{{ tomcat_user }}"
+    group: "{{ tomcat_group }}"
+    state: directory
+    recurse: yes
+
+- name: Deploy SSL conf file
+  template:
+    src: openssl.conf.j2
+    dest: "{{ openssl_cert_config_file }}"
+    owner: "{{ tomcat_user }}"
+    group: "{{ tomcat_group }}"
+
+- name: Copy script for certificat validity
+  copy:
+    src: check_cert_validity.sh
+    dest: "{{ tomcat_openssl_dir }}/check_cert_validity.sh"
+    owner: "{{ tomcat_user }}"
+    group: "{{ tomcat_group }}"
+    mode: 0500
+
+- name: Check if X509 Certification exists
+  stat:
+    path: "{{ openssl_certificate_file }}"
+  register: certificate_file_exists
+
+- name: Check if X509 is already valid
+  shell: "{{ tomcat_openssl_dir }}/check_cert_validity.sh {{ openssl_certificate_file }}"
+  register: certificate_file_valid
+  when: certificate_file_exists.stat.exists
+
+- name: Generating private key + certificate
+  command: >
+    openssl req
+      -new
+      -x509
+      -nodes
+      -days 3650
+      -subj "{{ openssl_subj }}"
+      -config {{ openssl_cert_config_file }}
+      -extensions v3_req
+      -out {{ openssl_certificate_file }}
+      -keyout {{ openssl_private_key_file }}
+  when: (not certificate_file_exists.stat.exists) or (certificate_file_valid is defined and certificate_file_valid.rc|int != 0)
+
+- name: Change owner of certifcate and private key file
+  file:
+    path: "{{ item }}"
+    owner: "{{ tomcat_user }}"
+    group: "{{ tomcat_group }}"
+  with_items:
+    - "{{ openssl_certificate_file }}"
+    - "{{ openssl_private_key_file }}"
+
+- name: Delete Temporary SSL conf file
+  file:
+    path: "{{ openssl_cert_config_file }}"
+    state: absent

@@ -1,0 +1,45 @@
+---
+# tasks file to configure status module for apache2
+
+- name : Check status.conf backup file exists
+  stat:
+    path: "{{ apache2_mods_available_dir }}/status.conf.backup"
+  register: status_conf_backup_file
+
+- name : Create status.conf backup file
+  copy:
+    src: "{{ apache2_mods_available_dir }}/status.conf"
+    dest: "{{ apache2_mods_available_dir }}/status.conf.backup"
+    owner: root
+    group: root
+    mode: 0644
+    remote_src: yes
+  when: not status_conf_backup_file.stat.exists
+
+- name: Create directory for status
+  file:
+    path: "{{ apache2_status_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Provide Authentication file
+  command: "/usr/bin/htpasswd -csb {{ apache2_status_dir }}/.htpasswd {{ apache2_status_auth_login }} {{ apache2_status_auth_passowrd }}"
+
+- name: Copy server status configuration file to Apache configuration directory
+  template:
+    src: status.conf.j2
+    dest: "{{ apache2_mods_available_dir }}/status.conf"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Enable Apache2 status mods configuration.
+  file:
+    src: "{{ apache2_mods_available_dir }}/status.conf"
+    dest: "{{ apache2_mods_enabled_dir }}status.conf"
+    state: link
+    owner: root
+    group: root
+    mode: 0755

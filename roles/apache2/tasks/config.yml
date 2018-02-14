@@ -1,0 +1,37 @@
+---
+# tasks file to configure apache2
+
+- name: Delete default index.html.
+  file:
+    path: "/var/www/html/index.html"
+    state: absent
+
+- name: Change the config of apache2
+  lineinfile:
+    dest: "{{ apache2_config_file }}"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.value }}"
+    owner: root
+    group: root
+    mode: 0644
+    state: present
+  with_items: "{{ apache2_config_params }}"
+
+- name: Enable Apache2 mods modules.
+  file:
+    src: "{{ apache2_mods_available_dir }}/{{ item }}"
+    dest: "{{ apache2_mods_enabled_dir }}/{{ item }}"
+    state: link
+  with_items: "{{ apache2_mods_enabled }}"
+
+- name: Disable Apache mods configuration.
+  file:
+    path: "{{ apache2_mods_enabled_dir }}/{{ item }}.conf"
+    state: absent
+  with_items: "{{ apache2_mods_disabled }}"
+
+- name: Disable Apache mods modules.
+  file:
+    path: "{{ apache2_mods_enabled_dir }}/{{ item }}.load"
+    state: absent
+  with_items: "{{ apache2_mods_disabled }}"

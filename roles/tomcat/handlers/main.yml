@@ -1,0 +1,14 @@
+---
+# handlers file for tomcat
+- name: Reload systemd
+  command: systemctl daemon-reload
+
+- name: Enable Tomcat service
+  systemd:
+    name: tomcat
+    enabled: yes
+
+- name: Restart tomcat
+  systemd:
+    name: tomcat
+    state: restarted

@@ -1,0 +1,22 @@
+---
+
+file:
+  {{ tomcat_versions }}:
+    # required attributes
+    exists: true
+    # optional attributes
+    owner: {{ tomcat_user }}
+    group: {{ tomcat_group }}
+    #mode:
+  {{ tomcat_last_version }}:
+    # required attributes
+    exists: true
+    # optional attributes
+    owner: {{ tomcat_user }}
+    group: {{ tomcat_group }}
+    #mode:
+
+service:
+  tomcat:
+    enabled: true
+    running: true

@@ -1,0 +1,48 @@
+---
+# tasks file to make backup for apache2 config files
+
+- name : Check apache2.conf backup file exists
+  stat:
+    path: "{{ apache2_config_file }}.backup"
+  register: apache2_conf_backup_file
+
+- name : Create apache2.conf backup file
+  copy:
+    src: "{{ apache2_config_file }}"
+    dest: "{{ apache2_config_file }}.backup"
+    owner: root
+    group: root
+    mode: 0644
+    remote_src: yes
+  when: not apache2_conf_backup_file.stat.exists
+
+- name : Check 000-default.conf backup file exists
+  stat:
+    path: "{{ apache2_site_available }}/000-default.conf.backup"
+  register: default_site_backup_file
+
+- name : Create 000-default.conf backup file
+  copy:
+    src: "{{ apache2_site_available }}/000-default.conf"
+    dest: "{{ apache2_site_available }}/000-default.conf.backup"
+    owner: root
+    group: root
+    mode: 0644
+    remote_src: yes
+  when: not default_site_backup_file.stat.exists
+
+
+- name : Check default-ssl.conf backup file exists
+  stat:
+    path: "{{ apache2_site_available }}/default-ssl.conf.backup"
+  register: default_ssl_backup_file
+
+- name : Create default-ssl.conf backup file
+  copy:
+    src: "{{ apache2_site_available }}/default-ssl.conf"
+    dest: "{{ apache2_site_available }}/default-ssl.conf.backup"
+    owner: root
+    group: root
+    mode: 0644
+    remote_src: yes
+  when: not default_ssl_backup_file.stat.exists

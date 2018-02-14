@@ -1,0 +1,45 @@
+---
+
+
+###################
+# Install tomcat on nodes
+###################
+- hosts: vm-debian-3
+  become: yes
+  roles:
+    - role: openjdk8
+    - role: tomcat
+      tomcat_goss_enabled: False
+      tomcat_iptables_enabled: True
+      tomcat_load_balancing_enabled: True
+      tomcat_jvm_name: "jvm-vm-debian-3"
+      tomcat_openssl_enabled: False
+      tomcat_keystore_enabled: False
+      tomcat_network_interface: "enp0s8"
+      tags: ['tomcat']
+
+- hosts: vm-debian-2
+  become: yes
+  roles:
+    - role: openjdk8
+    - role: tomcat
+      tomcat_goss_enabled: False
+      tomcat_iptables_enabled: True
+      tomcat_load_balancing_enabled: True
+      tomcat_jvm_name: "jvm-vm-debian-2"
+      tomcat_openssl_enabled: False
+      tomcat_keystore_enabled: False
+      tomcat_network_interface: "enp0s8"
+      tags: ['tomcat']
+
+
+###################
+# Install apache
+###################
+- hosts: vm-debian-1
+  become: yes
+  roles:
+    - role: apache_from_scratch
+    - role: apache_private_ca
+    - role: apache_vhosts_mod_jk
+      tags: ['apache_vhosts_mod_jk']
