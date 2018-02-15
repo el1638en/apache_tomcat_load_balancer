@@ -30,5 +30,6 @@
 - hosts: vm-debian-1
   become: yes
   roles:
+    - role: apache2_private_ca
     - role: apache2
       tags: ['apache2']

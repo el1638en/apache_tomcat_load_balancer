@@ -1,19 +1,19 @@
 # Mutex Mecanism. Look at support on https://httpd.apache.org/docs/2.4/fr/mod/core.html#mutex
-Mutex file:{{ apache2_log_dir }}/{{ item.key }}/mutex
-{% if item.value.https_enabled %}
+Mutex file:{{ apache2_log_dir }}/{{ apache2_vhost_serverName }}/mutex
+{% if apache2_vhost_https_enabled %}
 <IfModule ssl_module>
   SSLRandomSeed startup file:/dev/urandom 1024
   SSLRandomSeed connect file:/dev/urandom 1024
-  SSLSessionCache shmcb:{{ apache2_log_dir }}/{{ item.key }}/ssl_scache(512000)
+  SSLSessionCache shmcb:{{ apache2_log_dir }}/{{ apache2_vhost_serverName }}/ssl_scache(512000)
   SSLSessionCacheTimeout 1200
 </IfModule>
 {% endif %} 
 
 
 <VirtualHost *:{{ apache2_http_default_port }}>
-  ServerName {{ item.value.serverName }}
-  {% if item.value.https_enabled %}
-  Redirect permanent / https://{{ item.value.serverName }}  
+  ServerName {{ apache2_vhost_serverName }}
+  {% if apache2_vhost_https_enabled %}
+  Redirect permanent / https://{{ apache2_vhost_serverName }}  
   {% else %}
   
   # ServerAdmin: Your address, where problems with the server should be e-mailed.
@@ -24,7 +24,7 @@ Mutex file:{{ apache2_log_dir }}/{{ item.key }}/mutex
   # This can often be determined automatically, but we recommend you specify
   # it explicitly to prevent problems during startup.
   # If your host doesn't have a registered DNS name, enter its IP address here.
-  ServerAlias {{ item.value.serverAlias }}
+  ServerAlias {{ apache2_vhost_serverAlias }}
   
   # Include other configuration
   {% include './templates/additionnal.conf.j2' %}
@@ -32,7 +32,7 @@ Mutex file:{{ apache2_log_dir }}/{{ item.key }}/mutex
   {% endif %}
 </VirtualHost>
 
-{% if item.value.https_enabled %}
+{% if apache2_vhost_https_enabled %}
 <VirtualHost *:{{ apache2_https_default_port }}>
   
   # ServerAdmin: Your address, where problems with the server should be
@@ -45,11 +45,11 @@ Mutex file:{{ apache2_log_dir }}/{{ item.key }}/mutex
   # it explicitly to prevent problems during startup.
   # If your host doesn't have a registered DNS name, enter its IP address here.
  
-  ServerName {{ item.value.serverName }}
-  ServerAlias {{ item.value.serverAlias }}
+  ServerName {{ apache2_vhost_serverName }}
+  ServerAlias {{ apache2_vhost_serverAlias }}
   SSLEngine on
-  SSLCertificateFile		"{{ apache2_ssl_dir }}/{{ item.key }}/cert.pem"
-  SSLCertificateKeyFile		"{{ apache2_ssl_dir }}/{{ item.key }}/key.pem"
+  SSLCertificateFile		"{{ apache2_ssl_certs_dir }}/{{ apache2_vhost_serverName}}_cert.pem"
+  SSLCertificateKeyFile		"{{ apache2_ssl_private_keys_dir }}/{{ apache2_vhost_serverName}}_key.pem"
   
   # Support only for SSLv3.0 and TLSv1.0
   # all = "+SSLv3 +TLSv1 +TLSv1.1 +TLSv1.2" à partir de la version 1.0.1 d'OpenSSL 
@@ -61,8 +61,7 @@ Mutex file:{{ apache2_log_dir }}/{{ item.key }}/mutex
   # Include other configuration
   {% include './templates/additionnal.conf.j2' %}
 
-
 </VirtualHost>
 # Key protection Passphrase at startup
-SSLPassPhraseDialog		exec:{{ apache2_ssl_dir }}/{{ item.key }}/passphrase.sh
+SSLPassPhraseDialog		exec:{{ apache2_vhost_ssl_dir }}/passphrase.sh
 {% endif %}

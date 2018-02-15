@@ -1,1 +1,5 @@
 ---
+
+tomcat_iptables_enabled: True
+tomcat_load_balancing_enabled: True
+tomcat_network_interface: "enp0s8"

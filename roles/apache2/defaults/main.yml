@@ -10,7 +10,9 @@ apache2_mods_enabled_dir: "{{ apache2_config_dir }}/mods-enabled"
 java_home: /usr/bin/java
 apache2_log_dir: "/var/log/apache2"
 apache2_ssl_dir: "/etc/pki/apache2"
-apache2_ssl_ca_dir: "{{ apache2_ssl_dir }}/private_ca"
+apache_2_private_ca_dir: "{{ apache2_ssl_dir }}/private_ca"
+apache2_ssl_private_keys_dir: "{{ apache2_ssl_dir }}/private"
+apache2_ssl_certs_dir: "{{ apache2_ssl_dir }}/certs"
 # Apache2 modsecurity 
 apache2_mod_security_base_dir: "/etc/modsecurity"
 apache2_mod_security_config : 
@@ -29,8 +31,8 @@ apache2_status_enable_authentication: True
 apache2_server_admin: "root@admin"
 apache2_status_auth_login: "EL1638EN"
 apache2_status_auth_passowrd: "Mmdp-3325"
-root_user: root
-root_group: root
+apache2_root_user: root
+apache2_root_group: root
 mod_jk_port: '8009'
 apache2_conf_log_level: warn
 ssl_country: FR
@@ -38,6 +40,16 @@ ssl_state: Rhone
 ssl_locality: Lyon
 ssl_organisation: Syscom
 ssl_organisation_unit: IT
+apache2_vhost_serverName: "vhosts1.fr"
+apache2_vhost_serverAlias: "www.vhosts1.fr"
+apache2_vhost_https_enabled: False
+apache2_vhost_ssl_dir: "{{ apache2_ssl_dir }}/{{ apache2_vhost_serverName }}"
+apache2_vhost_ssl_subj: "/C=\"{{ ssl_country }}\"/ST=\"{{ ssl_state }}\"/L=\"{{ ssl_locality }}\"/O=\"{{ ssl_organisation }}\"/OU=\"{{ ssl_organisation_unit }}\"/CN=vhosts1.fr"
+apache2_vhost_webapps: "docs"
+apache2_vhost_workers:
+  - { name: 'worker1', host: '192.168.57.2', port: '{{ mod_jk_port }}' }
+  - { name: 'worker2', host: '192.168.58.2', port: '{{ mod_jk_port }}' }
+
 apache2_vhosts_mod_jk:
   vhost1:
     serverName: 'vhosts1.fr'
@@ -55,7 +67,8 @@ apache2_mods_enabled:
   - ssl.load
   - proxy.conf
   - proxy.load
-  - proxy_http.load  
+  - proxy_http.load
+  - socache_shmcb.load
 
 apache2_config_params:
     - { regexp: "^ServerTokens", value: "ServerTokens Prod" }

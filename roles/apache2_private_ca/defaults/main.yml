@@ -5,6 +5,7 @@ apache_2_private_ca_user: root
 apache_2_private_ca_user_group: root
 apache_2_private_ca_bits: 2048
 apache_2_private_ca_md: sha256
+apache_2_ssl_dir: "/etc/pki/apache2"
 apache_2_private_ca_dir: "/etc/pki/apache2/private_ca"
 apache_2_private_ca_index: "{{ apache_2_private_ca_dir }}/index.txt"
 apache_2_private_ca_serial: "{{ apache_2_private_ca_dir }}/serial"

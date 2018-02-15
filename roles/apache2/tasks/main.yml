@@ -7,6 +7,9 @@
 
 - include_tasks: modsecurity.yml
 
+- include_tasks: ssl.yml
+  when: apache2_vhost_https_enabled
+
 - include_tasks: mod_jk.yml
 
 - include_tasks: status.yml

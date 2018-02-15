@@ -1,6 +1,6 @@
  RewriteEngine on
- RewriteRule ^/(.*)$ /{{ item.value.webapps }}/$1 [L,PT]
- JkMount /{{ item.value.webapps }}* loadbalancer
+ RewriteRule ^/(.*)$ /{{ apache2_vhost_webapps }}/$1 [L,PT]
+ JkMount /{{ apache2_vhost_webapps }}* loadbalancer
 
  LogLevel {{ apache2_conf_log_level }}
  <IfModule log_config_module>
@@ -8,13 +8,13 @@
    LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
    LogFormat "%{Referer}i -> %U" referer
    LogFormat "%{User-agent}i" agent
-   {% if item.value.https_enabled %}
+   {% if apache2_vhost_https_enabled %}
    # Custom Log format for SSL request
    LogFormat "%t %h %{HTTPS}x %{SSL_PROTOCOL}x %{SSL_CIPHER}x \%{SSL_CIPHER_USEKEYSIZE}x %{SSL_CLIENT_VERIFY}x \"%r\" %b" ssl_log
    {% endif %}
-   CustomLog "|/usr/bin/rotatelogs {{ apache2_log_dir }}/{{ item.key }}/access_%Y%m%d.log 86400" combined
-   {% if item.value.https_enabled %}
-   CustomLog "|/usr/bin/rotatelogs {{ apache2_log_dir }}/{{ item.key }}/ssl_request_%Y%m%d.log 86400" ssl_log
+   CustomLog "|/usr/bin/rotatelogs {{ apache2_log_dir }}/{{ apache2_vhost_serverName }}/access_%Y%m%d.log 86400" combined
+   {% if apache2_vhost_https_enabled %}
+   CustomLog "|/usr/bin/rotatelogs {{ apache2_log_dir }}/{{ apache2_vhost_serverName }}/ssl_request_%Y%m%d.log 86400" ssl_log
    {% endif %}
-   ErrorLog  "|/usr/bin/rotatelogs {{ apache2_log_dir }}/{{ item.key }}/error_%Y%m%d.log 86400"
+   ErrorLog  "|/usr/bin/rotatelogs {{ apache2_log_dir }}/{{ apache2_vhost_serverName }}/error_%Y%m%d.log 86400"
  </IfModule>

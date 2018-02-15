@@ -3,12 +3,11 @@
 
 - name: Create virtual mutex directories
   file:
-    path: "{{ apache2_log_dir }}/{{ item.key }}/mutex"
+    path: "{{ apache2_log_dir }}/{{ apache2_vhost_serverName }}/mutex"
     state: directory
     owner: root
     group: root
     mode: 0644
-  with_dict: "{{ apache2_vhosts_mod_jk }}"
 
 - name: Copy Apache2 mod_jk configuration file
   template:
@@ -17,7 +16,6 @@
     owner: root
     group: root
     mode: 0644
-  with_dict: "{{ apache2_vhosts_mod_jk }}"
 
 - name: Copy Apache2 mod_jk configuration file
   template:
@@ -52,7 +50,6 @@
     owner: root
     group: root
     mode: 0644
-  with_dict: "{{ apache2_vhosts_mod_jk }}"
 
 - name: Enable virtualhost configuration
   file:

@@ -30,7 +30,7 @@
 - name: Copy script for certificat validity
   copy:
     src: check_cert_validity.sh
-    dest: "{{ apache_2_private_ca_dir }}/check_cert_validity.sh"
+    dest: "{{ apache_2_ssl_dir }}/check_cert_validity.sh"
     owner: "{{ apache_2_private_ca_user }}"
     group: "{{ apache_2_private_ca_user_group }}"
     mode: 0500
@@ -88,7 +88,7 @@
   register: ca_cert_file
 
 - name: Check if X509 is already valid
-  shell: "{{ apache_2_private_ca_dir }}/check_cert_validity.sh {{ apache_2_private_ca_cert }}"
+  shell: "{{ apache_2_ssl_dir }}/check_cert_validity.sh {{ apache_2_private_ca_cert }}"
   register: ca_cert_valid
   when: ca_cert_file.stat.exists
 

@@ -1,0 +1,71 @@
+---
+
+- name: Create ssl main directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ apache2_root_user }}"
+    group: "{{ apache2_root_group }}"
+  with_items:
+    - "{{ apache2_ssl_private_keys_dir }}"
+    - "{{ apache2_ssl_certs_dir }}"
+
+- name: Create virtual host ssl directory
+  file:
+    path: "{{ apache2_vhost_ssl_dir }}"
+    state: directory
+    owner: "{{ apache2_root_user }}"
+    group: "{{ apache2_root_group }}"
+    recurse: yes
+
+- name: Create passhprase (mod_jk)
+  shell: openssl rand -base64 48 > "{{ apache2_vhost_ssl_dir }}/passphrase.txt"
+ 
+- name: Secure passhprase (mod_jk)
+  file:
+    path: "{{ apache2_vhost_ssl_dir }}/passphrase.txt"
+    owner: "{{ apache2_root_user }}"
+    group: "{{ apache2_root_group }}"
+    mode: 0400
+ 
+- name: Copy Script shell script which will read passphrase.txt (mod_jk)
+  copy:
+    src: passphrase.sh
+    dest: "{{ apache2_vhost_ssl_dir }}/passphrase.sh"
+    owner: "{{ apache2_root_user }}"
+    group: "{{ apache2_root_group }}"
+    mode: 0500   
+
+- name: Create the private key for the virtual hosts (mod_jk)
+  command: >
+    openssl genrsa
+      -des3
+      -passout file:"{{ apache2_vhost_ssl_dir }}/passphrase.txt"
+      -out "{{ apache2_ssl_private_keys_dir }}/{{ apache2_vhost_serverName}}_key.pem" 2048
+      -rand file:/dev/random
+
+- name: Secure private key file (mod_jk)
+  file:
+    path: "{{ apache2_ssl_private_keys_dir }}/{{ apache2_vhost_serverName}}_key.pem"
+    owner: "{{ apache2_root_user }}"
+    group: "{{ apache2_root_group }}"
+    mode: 0400
+
+- name: Create a certificat signing request for the virtual hosts (mod_jk)
+  command: >
+    openssl req
+      -new
+      -passin file:"{{ apache2_vhost_ssl_dir }}/passphrase.txt"
+      -key "{{ apache2_ssl_private_keys_dir }}/{{ apache2_vhost_serverName}}_key.pem"
+      -out "{{ apache2_ssl_certs_dir }}/{{ apache2_vhost_serverName}}_req.pem"
+      -subj "{{ apache2_vhost_ssl_subj }}"
+      -config "{{ apache_2_private_ca_dir }}/openssl_ca.conf"
+
+- name: Sign the certificat for the virtual host
+  command: >
+    openssl ca
+      -batch
+      -notext
+      -out "{{ apache2_ssl_certs_dir }}/{{ apache2_vhost_serverName}}_cert.pem"
+      -config "{{ apache_2_private_ca_dir }}/openssl_ca.conf"
+      -infiles "{{ apache2_ssl_certs_dir }}/{{ apache2_vhost_serverName}}_req.pem"
